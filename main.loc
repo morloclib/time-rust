@@ -1,0 +1,22 @@
+module time-rust (*)
+
+import time
+import root-rust
+
+
+source Rust from "timelib.rs"
+    ( "time_rs_now" as now
+    , "time_rs_local_offset" as localOffset
+    , "time_rs_to_seconds" as toSeconds
+    , "time_rs_to_datetime" as toDateTime
+    , "time_rs_from_datetime" as fromDateTime
+    , "time_rs_weekday" as weekday
+    , "time_rs_format_time" as formatTime
+    , "time_rs_parse_time" as parseTime
+    )
+
+instance Show Duration where
+  source Rust from "timelib.rs" ("time_rs_show_duration" as show)
+
+instance Readable Duration where
+  source Rust from "timelib.rs" ("time_rs_read_duration" as read)
