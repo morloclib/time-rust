@@ -789,14 +789,11 @@ fn time_rs_show_positive(d: i128) -> String {
     out
 }
 
-pub fn time_rs_show_duration(d: &i64) -> String {
-    let d = *d as i128;
-    if d == 0 {
+pub fn time_rs_show_duration(d: &u64) -> String {
+    if *d == 0 {
         "0s".to_string()
-    } else if d < 0 {
-        format!("-{}", time_rs_show_positive(-d))
     } else {
-        time_rs_show_positive(d)
+        time_rs_show_positive(*d as i128)
     }
 }
 
@@ -837,20 +834,13 @@ impl TimeRsSum {
     }
 }
 
-pub fn time_rs_read_duration(s: &String) -> Try<String, i64> {
+pub fn time_rs_read_duration(s: &String) -> Try<String, u64> {
     let cs: Vec<char> = s.chars().collect();
     let mut i = 0;
-    let mut neg = false;
-    if let Some(&c) = cs.first() {
-        if c == '+' || c == '-' {
-            neg = c == '-';
-            i = 1;
-        }
-    }
-    if cs.len() == i + 1 && cs[i] == '0' {
+    if cs.len() == 1 && cs[0] == '0' {
         return time_rs_ok(0);
     }
-    if i == cs.len() {
+    if cs.is_empty() {
         return time_rs_err(format!("expected a duration such as 1h30m or 2.5s, got {}", time_rs_repr(s)));
     }
     let units: [(&str, u64); 5] = [
@@ -902,10 +892,16 @@ pub fn time_rs_read_duration(s: &String) -> Try<String, i64> {
         total.add_scaled_fraction(&frac, scale);
         i = j + ulen;
     }
-    let v = total.whole as i128;
-    let v = if neg { -v } else { v };
-    if !time_rs_in_i64(v) {
-        return time_rs_err(format!("duration {} is outside the range of I64 microseconds", time_rs_repr(s)));
+    if total.whole > u64::MAX as u128 {
+        return time_rs_err(format!("duration {} is outside the range of U64 microseconds", time_rs_repr(s)));
     }
-    time_rs_ok(v as i64)
+    time_rs_ok(total.whole as u64)
+}
+
+pub fn time_rs_since_earliest(t: i64) -> u64 {
+    (t as u64) ^ (1u64 << 63)
+}
+
+pub fn time_rs_earliest_plus(u: u64) -> i64 {
+    (u ^ (1u64 << 63)) as i64
 }

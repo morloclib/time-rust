@@ -13,6 +13,8 @@ source Rust from "timelib.rs"
     , "time_rs_weekday" as weekday
     , "time_rs_format_time" as formatTime
     , "time_rs_parse_time" as parseTime
+    , "time_rs_since_earliest" as sinceEarliest
+    , "time_rs_earliest_plus" as earliestPlus
     )
 
 instance Show Duration where
